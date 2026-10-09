@@ -1,0 +1,22 @@
+# Compilaciones y caches de CMake
+/build/*
+!/build/.gitkeep
+/build-*/
+/cmake-build-*/
+CMakeUserPresets.json
+# Capturas y resultados generados; conservarlos localmente
+/grabaciones/
+*.mp4
+menu_preview.ppm
+# Python y archivos temporales de editores
+__pycache__/
+*.py[cod]
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
+.DS_Store
+# Configuraciones locales privadas
+.env
+.env.*
