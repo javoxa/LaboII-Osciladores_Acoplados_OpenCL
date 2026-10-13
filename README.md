@@ -16,7 +16,7 @@ parameters/ejemplo.cfg       configuración comentada
 build/                      ejecutable y archivos de CMake
 ```
 
-Dependencias: compilador C++17, CMake >=3.16, OpenCL ICD y runtime del fabricante (o PoCL para CPU), OpenGL 1.2 con pipeline fijo y GLU, FreeGLUT; ffmpeg con encoder libx264 para MP4. Implementación host/ventana/captura orientada a Linux/POSIX (fork, pipe, GLX); kernels OpenCL 1.2 independientes del fabricante. El port a Windows requiere adaptar captura y carga de funciones GL; no se afirma portabilidad automática del host a todos los sistemas operativos.
+Dependencias: compilador C++17, CMake >=3.16, OpenCL ICD y runtime con OpenCL 1.1 o posterior (Mesa/Clover, runtime del fabricante o PoCL para CPU), OpenGL 1.2 con pipeline fijo y GLU, FreeGLUT; ffmpeg con encoder libx264 para MP4. Implementación host/ventana/captura orientada a Linux/POSIX (fork, pipe, GLX); host y kernels con base OpenCL 1.1, independientes del fabricante. El port a Windows requiere adaptar captura y carga de funciones GL; no se afirma portabilidad automática del host a todos los sistemas operativos.
 
 En Debian/Ubuntu:
 
@@ -158,3 +158,26 @@ El repositorio incluye sólo fuentes, configuraciones de ejemplo, documentación
 El workflow `.github/workflows/ci.yml` compila en Linux y ejecuta CTest en cada push y pull request. Usa OpenCL en CPU mediante PoCL para no depender de una GPU NVIDIA en el servidor. Comprueba parser, archivos de ejemplo y dinámica; el renderizado y la captura MP4 se prueban localmente mediante `--render-test`, ya que requieren ventana y ffmpeg. Los ejemplos se mantienen como fueron configurados por el autor: `ejemplo.cfg` tiene amplitud inicial cero, por lo que permanece en reposo hasta arrastrar una masa o activar la fuerza. Para una demostración inmediata, usar `onda_forzada.cfg`.
 
 `CAMBIOS_MENU.md` conserva notas históricas de implementación. La guía actual de uso es este README.
+
+
+## Compatibilidad con los equipos del laboratorio (RX 550)
+
+Se integró la corrección de `opencl_1_1` en la versión principal: los kernels se compilan con `-cl-std=CL1.1` y CMake limita la API del host a `CL_TARGET_OPENCL_VERSION=110`. No se necesitan funciones de OpenCL 1.2 para la dinámica actual. Se conservan fuerza sinusoidal, bordes mixtos, controles de N, escala Y, arrastre, ciclo de H, timestep fijo y grabación. Los diagnósticos indican driver, runtime, versión OpenCL C, disponibilidad del compilador, código de fallo y log del build (también cuando está vacío).
+
+En los equipos reportados, la RX 550 figura bajo **Clover / Mesa 22.3.6**, con **OpenCL C 1.1**. La versión anterior solicitaba CL1.2; por eso no era una base válida para ese runtime. La carpeta `opencl_1_1` es una referencia local excluida del repositorio: se usa ahora una sola versión principal.
+
+Después de actualizar en el laboratorio:
+
+```bash
+git pull --ff-only
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build --parallel 2
+./build/osciladores --self-test
+./build/osciladores parameters/onda_forzada.cfg
+```
+
+`dispositivo` selecciona el índice global de dispositivos enumerados por todas las plataformas, empezando en cero. En la salida aportada: **0 = RX 550/Clover**, **1 = Intel CPU/PoCL**; rusticl no enumera dispositivos. Para probar CPU cambiar `dispositivo=1` en el archivo usado (la prueba `--self-test` usa el índice 0). Confirmar siempre la enumeración local con `clinfo -l`; el orden puede variar entre equipos. El programa no cambia silenciosamente a CPU.
+
+La especificación del lenguaje del kernel y la versión de la API del host son distintas; ambas se bajaron a 1.1 para mantener una base coherente. [Referencia de clBuildProgram](https://registry.khronos.org/OpenCL/specs/unified/refpages/man/html/clBuildProgram.html).
+
+Validación local: compilación con headers limitados a 1.1 y pruebas físicas/analíticas en NVIDIA A4000. CI ejecuta los mismos kernels CL1.1 sobre PoCL CPU. La RX 550 no está disponible en este equipo: confirmar allí `--self-test` y funcionamiento de ventana tras actualizar; esta integración elimina la exigencia de CL1.2, pero no sustituye esa comprobación del runtime concreto.

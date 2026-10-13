@@ -23,5 +23,5 @@ jobs:
         run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
       - name: Compilar
         run: cmake --build build --parallel 2
-      - name: Verificar parser, configuraciones y fisica OpenCL
+      - name: Verificar parser, configuraciones y kernels OpenCL C 1.1 en CPU
         run: ctest --test-dir build --output-on-failure

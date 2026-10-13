@@ -28,6 +28,7 @@ std::vector<float> initial(const Config&);
 std::vector<float> acceleration(const Config&,const std::vector<float>&);
 double energy(const Config&,const std::vector<float>&,const std::vector<float>&,double* kinetic=nullptr);
 class Dynamics {
+ void releaseResources();
  Config c; double drive_phase=0; cl_context context=nullptr; cl_command_queue queue=nullptr; cl_program program=nullptr; cl_kernel drift=nullptr,kick=nullptr;
  cl_mem pos=nullptr,vel=nullptr,next=nullptr,half=nullptr;
  public:

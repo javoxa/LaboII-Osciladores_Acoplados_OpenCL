@@ -20,3 +20,6 @@ __pycache__/
 # Configuraciones locales privadas
 .env
 .env.*
+
+# Local reference checkout used to integrate laboratory compatibility
+/opencl_1_1/
